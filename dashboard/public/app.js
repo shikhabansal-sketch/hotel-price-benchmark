@@ -145,14 +145,22 @@ const renderJob = job => {
   status.textContent =
     job.status === "running"
       ? "Refreshing"
+      : job.status === "publishing"
+        ? "Publishing"
       : job.status === "completed"
         ? "Complete"
         : "Failed";
 
-  if (job.status === "running") {
+  if (job.status === "running" || job.status === "publishing") {
     panel.hidden = false;
     button.disabled = true;
-    text("activeHotel", job.activeHotel || "Opening Booking.com");
+    text(
+      "activeHotel",
+      job.activeHotel ||
+        (job.status === "publishing"
+          ? "Publishing GitHub Pages snapshot"
+          : "Opening Booking.com"),
+    );
     const totalCount = job.totalCount || 10;
     text("jobCount", `${job.checkedCount || 0} / ${totalCount}`);
     document.getElementById("progressBar").style.width = `${Math.min(
@@ -221,7 +229,9 @@ const pollJob = async () => {
   const payload = await fetchJson("/api/job");
   renderJob(payload.job);
 
-  if (payload.job?.status === "running") return;
+  if (payload.job?.status === "running" || payload.job?.status === "publishing") {
+    return;
+  }
 
   window.clearInterval(state.pollTimer);
   state.pollTimer = null;

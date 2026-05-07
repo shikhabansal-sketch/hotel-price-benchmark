@@ -1,5 +1,5 @@
 {
-  "generatedAtIso": "2026-05-07T19:50:32.266Z",
+  "generatedAtIso": "2026-05-07T20:03:29.563Z",
   "config": {
     "label": "1 adult, 1 room, 1 night, 7 days in advance, GBP, GB",
     "currency": "GBP"
@@ -1158,5 +1158,5 @@
       "source": "latest run"
     }
   ],
-  "publishedAtIso": "2026-05-07T19:50:32.266Z"
+  "publishedAtIso": "2026-05-07T20:03:29.563Z"
 }

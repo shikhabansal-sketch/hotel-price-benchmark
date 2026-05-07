@@ -30,6 +30,14 @@ http://127.0.0.1:4317
 
 Use **Refresh prices** in the dashboard to run a new comparison.
 
+After a successful dashboard refresh, the server automatically exports the static GitHub Pages snapshot, commits `docs/` and `runs/`, and pushes the update to `main`.
+
+To disable automatic publishing for a local run:
+
+```bash
+AUTO_PUBLISH_ON_REFRESH=0 npm start
+```
+
 ## Run A Refresh From The CLI
 
 ```bash
@@ -60,7 +68,7 @@ After GitHub Pages is enabled, the shareable link is:
 https://shikhabansal-sketch.github.io/hotel-price-benchmark/
 ```
 
-The URL stays the same. It shows new data after you refresh prices, export the static page, and push the updated `docs/data.json` and run outputs.
+The URL stays the same. It shows new data after you refresh prices in the local dashboard and the automatic publish step finishes.
 
 For a full local refresh and publish in one command:
 

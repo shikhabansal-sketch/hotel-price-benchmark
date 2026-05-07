@@ -8,7 +8,11 @@ const PUBLIC_DIR = path.resolve(__dirname, "public");
 const HOTELS_FILE = path.join(REPO_ROOT, "hotels.md");
 const RUNS_ROOT = path.join(REPO_ROOT, "runs");
 const RUNNER_FILE = path.join(REPO_ROOT, "scripts", "booking-omio-compare.js");
+const EXPORT_FILE = path.join(REPO_ROOT, "scripts", "export-static.js");
 const DEFAULT_PORT = Number.parseInt(process.env.PORT || "4317", 10);
+const PAGES_URL =
+  "https://shikhabansal-sketch.github.io/hotel-price-benchmark/";
+const AUTO_PUBLISH_ON_REFRESH = process.env.AUTO_PUBLISH_ON_REFRESH !== "0";
 
 let activeJob = null;
 
@@ -322,16 +326,22 @@ const getPublicJob = () =>
         activeHotel: activeJob.activeHotel,
         exitCode: activeJob.exitCode,
         error: activeJob.error,
+        pagesUrl: activeJob.pagesUrl,
         logs: activeJob.logs.slice(-80),
       }
     : null;
+
+const appendLogLine = line => {
+  if (!activeJob || !line) return;
+  activeJob.logs.push(line);
+};
 
 const appendJobLog = chunk => {
   if (!activeJob) return;
 
   const text = chunk.toString();
   for (const line of text.split(/\r?\n/).filter(Boolean)) {
-    activeJob.logs.push(line);
+    appendLogLine(line);
 
     const match = /^Checking\s+(\d+)\.\s+(.+)$/.exec(line);
     if (match) {
@@ -344,8 +354,75 @@ const appendJobLog = chunk => {
   }
 };
 
+const runPublishCommand = (command, args, options = {}) =>
+  new Promise((resolve, reject) => {
+    appendLogLine(`$ ${[command, ...args].join(" ")}`);
+
+    const child = spawn(command, args, {
+      cwd: REPO_ROOT,
+      env: { ...process.env, FORCE_COLOR: "0" },
+    });
+
+    let output = "";
+    const handleOutput = chunk => {
+      output += chunk.toString();
+      appendJobLog(chunk);
+    };
+
+    child.stdout.on("data", handleOutput);
+    child.stderr.on("data", handleOutput);
+    child.on("error", reject);
+    child.on("close", code => {
+      const allowedCodes = options.allowedCodes || [0];
+
+      if (allowedCodes.includes(code)) {
+        resolve({ code, output });
+        return;
+      }
+
+      reject(new Error(`${command} ${args.join(" ")} exited with ${code}`));
+    });
+  });
+
+const publishSnapshot = async () => {
+  if (!activeJob) return;
+
+  activeJob.status = "publishing";
+  activeJob.checkedCount = activeJob.totalCount;
+  activeJob.activeHotel = "Exporting static dashboard";
+  appendLogLine("Publishing GitHub Pages snapshot");
+
+  await runPublishCommand(process.execPath, [EXPORT_FILE]);
+  activeJob.activeHotel = "Committing dashboard snapshot";
+  await runPublishCommand("git", ["add", "docs", "runs"]);
+
+  const diff = await runPublishCommand("git", ["diff", "--cached", "--quiet"], {
+    allowedCodes: [0, 1],
+  });
+
+  if (diff.code === 0) {
+    appendLogLine("No static snapshot changes to commit");
+  } else {
+    const latestResult = getLatestResult();
+    const suffix = latestResult
+      ? `${latestResult.checkInIso} to ${latestResult.checkOutIso}`
+      : new Date().toISOString().slice(0, 10);
+
+    await runPublishCommand("git", [
+      "commit",
+      "-m",
+      `Update benchmark snapshot ${suffix}`,
+    ]);
+  }
+
+  activeJob.activeHotel = "Pushing GitHub Pages snapshot";
+  await runPublishCommand("git", ["push"]);
+  activeJob.pagesUrl = PAGES_URL;
+  appendLogLine(`Published ${PAGES_URL}`);
+};
+
 const startRefreshJob = () => {
-  if (activeJob?.status === "running") return activeJob;
+  if (["running", "publishing"].includes(activeJob?.status)) return activeJob;
 
   const hotels = parseHotelsMarkdown(fs.readFileSync(HOTELS_FILE, "utf8"));
 
@@ -378,10 +455,33 @@ const startRefreshJob = () => {
     if (!activeJob) return;
 
     activeJob.exitCode = code;
-    activeJob.status = code === 0 ? "completed" : "failed";
-    activeJob.checkedCount =
-      activeJob.status === "completed" ? activeJob.totalCount : activeJob.checkedCount;
-    activeJob.finishedAtIso = new Date().toISOString();
+
+    if (code !== 0) {
+      activeJob.status = "failed";
+      activeJob.finishedAtIso = new Date().toISOString();
+      return;
+    }
+
+    activeJob.checkedCount = activeJob.totalCount;
+
+    if (!AUTO_PUBLISH_ON_REFRESH) {
+      activeJob.status = "completed";
+      activeJob.finishedAtIso = new Date().toISOString();
+      return;
+    }
+
+    publishSnapshot()
+      .then(() => {
+        if (!activeJob) return;
+        activeJob.status = "completed";
+        activeJob.finishedAtIso = new Date().toISOString();
+      })
+      .catch(error => {
+        if (!activeJob) return;
+        activeJob.status = "failed";
+        activeJob.error = error.message;
+        activeJob.finishedAtIso = new Date().toISOString();
+      });
   });
 
   return activeJob;
@@ -452,7 +552,7 @@ const handleRequest = (request, response) => {
 
   if (request.method === "POST" && url.pathname === "/api/refresh") {
     try {
-      if (activeJob?.status !== "running") {
+      if (!["running", "publishing"].includes(activeJob?.status)) {
         startRefreshJob();
       }
       sendJson(response, 202, { job: getPublicJob() });

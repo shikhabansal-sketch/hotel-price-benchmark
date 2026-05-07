@@ -151,6 +151,12 @@ h2 {
   border-color: #fad9a8;
 }
 
+.status-pill.publishing {
+  background: var(--deep-blue-soft);
+  color: var(--deep-blue);
+  border-color: #bfc7de;
+}
+
 .status-pill.completed {
   background: var(--green-soft);
   color: var(--green);
