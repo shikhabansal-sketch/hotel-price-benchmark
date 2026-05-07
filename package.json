@@ -7,8 +7,10 @@
   "scripts": {
     "start": "node dashboard/server.js",
     "refresh": "node scripts/booking-omio-compare.js",
+    "export": "node scripts/export-static.js",
+    "publish": "npm run refresh && npm run export && git add runs docs && git commit -m \"Update benchmark snapshot\" && git push",
     "install:browsers": "playwright install chromium",
-    "check": "node --check scripts/booking-omio-compare.js && node --check dashboard/server.js"
+    "check": "node --check scripts/booking-omio-compare.js && node --check dashboard/server.js && node --check scripts/export-static.js"
   },
   "dependencies": {
     "playwright": "1.58.2"

@@ -488,4 +488,10 @@ const listen = port => {
   });
 };
 
-listen(DEFAULT_PORT);
+if (require.main === module) {
+  listen(DEFAULT_PORT);
+} else {
+  module.exports = {
+    buildDashboardState,
+  };
+}

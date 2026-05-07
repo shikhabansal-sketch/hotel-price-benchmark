@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hotel Price Benchmark</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">O4B supply benchmark</p>
+          <h1>Hotel Price Benchmark</h1>
+          <p class="subtle" id="configLabel">Loading configuration</p>
+        </div>
+        <div class="topbar-actions">
+          <div class="status-pill completed" id="snapshotStatus">Static snapshot</div>
+        </div>
+      </header>
+
+      <section class="meta-strip" aria-label="Benchmark metadata">
+        <div>
+          <span class="meta-label">Stay</span>
+          <strong id="stayDates">-</strong>
+        </div>
+        <div>
+          <span class="meta-label">Latest run</span>
+          <strong id="latestRun">-</strong>
+        </div>
+        <div>
+          <span class="meta-label">Published</span>
+          <strong id="publishedAt">-</strong>
+        </div>
+      </section>
+
+      <section class="meta-strip" aria-label="Source metadata">
+        <div>
+          <span class="meta-label">Source</span>
+          <strong id="sourceLabel">hotels.md</strong>
+        </div>
+        <div>
+          <span class="meta-label">Refresh mode</span>
+          <strong>Local export</strong>
+        </div>
+        <div>
+          <span class="meta-label">Audience</span>
+          <strong>Read-only</strong>
+        </div>
+      </section>
+
+      <section class="summary-grid" aria-label="Benchmark summary">
+        <article class="metric">
+          <span>Hotels</span>
+          <strong id="hotelCount">-</strong>
+        </article>
+        <article class="metric metric-omio">
+          <span>Omio/HBX cheaper</span>
+          <strong id="omioWins">-</strong>
+        </article>
+        <article class="metric metric-booking">
+          <span>Booking.com cheaper</span>
+          <strong id="bookingWins">-</strong>
+        </article>
+        <article class="metric metric-tie">
+          <span>Ties</span>
+          <strong id="ties">-</strong>
+        </article>
+        <article class="metric metric-saving">
+          <span>Best Omio saving</span>
+          <strong id="bestSaving">-</strong>
+        </article>
+      </section>
+
+      <section class="table-panel">
+        <div class="table-heading">
+          <div>
+            <h2>Price spread by hotel</h2>
+            <p class="subtle" id="tableSubtitle">-</p>
+          </div>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Hotel</th>
+                <th>Booking.com</th>
+                <th>Omio/HBX</th>
+                <th>Delta</th>
+                <th>Cheaper</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

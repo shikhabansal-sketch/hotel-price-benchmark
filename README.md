@@ -43,6 +43,31 @@ runs/booking-omio-<check-in>-<check-out>/comparison.csv
 runs/booking-omio-<check-in>-<check-out>/comparison.json
 ```
 
+## Publish The Static Management Page
+
+GitHub Pages serves the read-only dashboard from `docs/`.
+
+```bash
+npm run export
+git add docs runs
+git commit -m "Update benchmark snapshot"
+git push
+```
+
+After GitHub Pages is enabled, the shareable link is:
+
+```text
+https://shikhabansal-sketch.github.io/hotel-price-benchmark/
+```
+
+The URL stays the same. It shows new data after you refresh prices, export the static page, and push the updated `docs/data.json` and run outputs.
+
+For a full local refresh and publish in one command:
+
+```bash
+npm run publish
+```
+
 ## Date Configuration
 
 The run dates come from the `_Config:_` line in `hotels.md`.
