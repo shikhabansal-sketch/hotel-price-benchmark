@@ -1,0 +1,19 @@
+{
+  "name": "hotel-price-benchmark",
+  "version": "1.0.0",
+  "private": false,
+  "description": "Compare Booking.com hotel prices with Omio/HBX accommodation-service prices.",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node dashboard/server.js",
+    "refresh": "node scripts/booking-omio-compare.js",
+    "install:browsers": "playwright install chromium",
+    "check": "node --check scripts/booking-omio-compare.js && node --check dashboard/server.js"
+  },
+  "dependencies": {
+    "playwright": "1.58.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

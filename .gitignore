@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+*.log
+
+# Keep committed sample/latest comparison runs, but ignore local screenshots.
+dashboard-check.png
+playwright-report/
+test-results/
