@@ -166,7 +166,7 @@ const renderState = dashboardState => {
   renderRows(dashboardState.rows);
 };
 
-fetch("data.json", { cache: "no-store" })
+fetch(`data.json?v=${Date.now()}`, { cache: "no-store" })
   .then(response => response.json())
   .then(renderState)
   .catch(error => {
