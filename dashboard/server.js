@@ -55,6 +55,18 @@ const formatMoney = (lowestUnitValue, currency = "GBP", includeSign = false) => 
   return `${sign}${currency} ${(lowestUnitValue / 100).toFixed(2)}`;
 };
 
+const getDeltaPercentValue = (deltaLowestUnitValue, bookingLowestUnitValue) => {
+  if (
+    !Number.isFinite(deltaLowestUnitValue) ||
+    !Number.isFinite(bookingLowestUnitValue) ||
+    bookingLowestUnitValue === 0
+  ) {
+    return undefined;
+  }
+
+  return (deltaLowestUnitValue / bookingLowestUnitValue) * 100;
+};
+
 const parseConfig = markdown => {
   const line = markdown.split(/\r?\n/).find(entry => /_?Config:/i.test(entry));
   if (!line) return { label: "Config unavailable", currency: "GBP" };
@@ -204,6 +216,10 @@ const buildRows = (hotels, latestResult, currency) => {
       Number.isFinite(bookingLowestUnitValue) && Number.isFinite(omioLowestUnitValue)
         ? omioLowestUnitValue - bookingLowestUnitValue
         : result.deltaLowestUnitValue ?? hotel.deltaLowestUnitValue;
+    const deltaPercentValue = getDeltaPercentValue(
+      deltaLowestUnitValue,
+      bookingLowestUnitValue,
+    );
     const warnings = normalizeText(result.warnings);
     const hasFallbackOmio = !result.omioPrice && hotel.omioPrice;
     const hasFallbackBooking = !result.bookingPrice && hotel.bookingPrice;
@@ -235,6 +251,7 @@ const buildRows = (hotels, latestResult, currency) => {
         ? formatMoney(deltaLowestUnitValue, currency, true)
         : result.delta || hotel.delta || "",
       deltaLowestUnitValue,
+      deltaPercentValue,
       warnings:
         warnings && !hasFallbackOmio && !hasFallbackBooking
           ? warnings
@@ -257,6 +274,10 @@ const buildSummary = rows => {
       if (row.cheaperSupplier === "Tie") accumulator.ties += 1;
       if (row.warnings) accumulator.warnings += 1;
       if (Number.isFinite(row.deltaLowestUnitValue)) {
+        if (Number.isFinite(row.bookingLowestUnitValue) && row.bookingLowestUnitValue > 0) {
+          accumulator.weightedDeltaTotal += row.deltaLowestUnitValue;
+          accumulator.weightedBookingTotal += row.bookingLowestUnitValue;
+        }
         if (
           !accumulator.bestOmioSaving ||
           row.deltaLowestUnitValue < accumulator.bestOmioSaving.deltaLowestUnitValue
@@ -273,11 +294,22 @@ const buildSummary = rows => {
       ties: 0,
       warnings: 0,
       bestOmioSaving: null,
+      weightedDeltaTotal: 0,
+      weightedBookingTotal: 0,
     },
   );
 
   return {
     ...summary,
+    competitiveness:
+      summary.weightedBookingTotal > 0
+        ? Number(
+            (
+              100 -
+              (summary.weightedDeltaTotal / summary.weightedBookingTotal) * 100
+            ).toFixed(1),
+          )
+        : 100,
     bestOmioSaving:
       summary.bestOmioSaving && summary.bestOmioSaving.deltaLowestUnitValue < 0
         ? {

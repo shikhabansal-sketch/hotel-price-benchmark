@@ -8,6 +8,12 @@ const moneyFromLowestUnit = value => {
   return `GBP ${(Math.abs(value) / 100).toFixed(2)}`;
 };
 
+const formatSignedPercent = value => {
+  if (!Number.isFinite(value)) return "-";
+  if (value === 0) return "0.0%";
+  return `${value > 0 ? "+" : ""}${value.toFixed(1)}%`;
+};
+
 const formatDateTime = value => {
   if (!value) return "-";
   return formatter.format(new Date(value));
@@ -68,7 +74,7 @@ const renderRows = rows => {
   const body = document.getElementById("resultsBody");
 
   if (!rows.length) {
-    body.innerHTML = `<tr><td class="empty" colspan="6">No hotels found.</td></tr>`;
+    body.innerHTML = `<tr><td class="empty" colspan="7">No hotels found.</td></tr>`;
     return;
   }
 
@@ -87,9 +93,9 @@ const renderRows = rows => {
         : 0;
       const deltaLabel =
         Number.isFinite(row.deltaLowestUnitValue) && row.deltaLowestUnitValue < 0
-          ? `${moneyFromLowestUnit(row.deltaLowestUnitValue)} cheaper on Omio`
+          ? `${Math.abs(row.deltaPercentValue || 0).toFixed(1)}% cheaper on Omio`
           : Number.isFinite(row.deltaLowestUnitValue) && row.deltaLowestUnitValue > 0
-            ? `${moneyFromLowestUnit(row.deltaLowestUnitValue)} cheaper on Booking.com`
+            ? `${Math.abs(row.deltaPercentValue || 0).toFixed(1)}% cheaper on Booking.com`
             : "No spread";
 
       return `
@@ -115,6 +121,7 @@ const renderRows = rows => {
               <span class="room-meta">${deltaLabel}</span>
             </div>
           </td>
+          <td><span class="${deltaClass(row)}"><span class="delta-percent">${escapeHtml(formatSignedPercent(row.deltaPercentValue))}</span></span></td>
           <td><span class="${classForSupplier(row.cheaperSupplier)}">${escapeHtml(row.cheaperSupplier || "n/a")}</span></td>
           <td>${renderStatus(row)}</td>
         </tr>
@@ -126,6 +133,7 @@ const renderRows = rows => {
 const renderState = dashboardState => {
   text("configLabel", dashboardState.config.label);
   text("hotelCount", dashboardState.summary.hotelCount);
+  text("competitiveness", `${dashboardState.summary.competitiveness}%`);
   text("omioWins", dashboardState.summary.omioWins);
   text("bookingWins", dashboardState.summary.bookingWins);
   text("ties", dashboardState.summary.ties);

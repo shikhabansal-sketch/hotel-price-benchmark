@@ -214,7 +214,7 @@ h2 {
 
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 1px;
   overflow: hidden;
   border-radius: 8px;
@@ -231,6 +231,10 @@ h2 {
   display: block;
   font-size: 28px;
   line-height: 1;
+}
+
+.metric-competitiveness strong {
+  color: var(--deep-blue);
 }
 
 .metric-omio strong,
@@ -365,6 +369,11 @@ td {
   font-weight: 700;
 }
 
+.delta-percent {
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .delta-bar {
   position: relative;
   width: 116px;
@@ -389,11 +398,23 @@ td {
   color: var(--green);
 }
 
+.delta-negative .delta-percent {
+  color: var(--green);
+}
+
 .delta-positive .delta-value {
   color: var(--red);
 }
 
+.delta-positive .delta-percent {
+  color: var(--red);
+}
+
 .delta-neutral .delta-value {
+  color: var(--orange);
+}
+
+.delta-neutral .delta-percent {
   color: var(--orange);
 }
 

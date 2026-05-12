@@ -1,5 +1,5 @@
 {
-  "generatedAtIso": "2026-05-11T09:05:21.753Z",
+  "generatedAtIso": "2026-05-12T15:40:58.065Z",
   "config": {
     "label": "1 adult, 1 room, 1 night, 7 days in advance, GBP, GB",
     "currency": "GBP"
@@ -21,7 +21,10 @@
     "bestOmioSaving": {
       "hotel": "ibis Cambridge Central Station",
       "value": 2703
-    }
+    },
+    "weightedDeltaTotal": -11820,
+    "weightedBookingTotal": 705250,
+    "competitiveness": 101.7
   },
   "rows": [
     {
@@ -43,6 +46,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -9.26",
       "deltaLowestUnitValue": -926,
+      "deltaPercentValue": -4.748717948717949,
       "warnings": "",
       "source": "latest run"
     },
@@ -65,6 +69,7 @@
       "cheaperSupplier": "Booking.com",
       "delta": "+GBP 0.20",
       "deltaLowestUnitValue": 20,
+      "deltaPercentValue": 0.06269592476489029,
       "warnings": "",
       "source": "latest run"
     },
@@ -87,6 +92,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -1.85",
       "deltaLowestUnitValue": -185,
+      "deltaPercentValue": -1.088235294117647,
       "warnings": "",
       "source": "latest run"
     },
@@ -109,6 +115,7 @@
       "cheaperSupplier": "Tie",
       "delta": "GBP 0.00",
       "deltaLowestUnitValue": 0,
+      "deltaPercentValue": 0,
       "warnings": "",
       "source": "latest run"
     },
@@ -131,6 +138,7 @@
       "cheaperSupplier": "Tie",
       "delta": "GBP 0.00",
       "deltaLowestUnitValue": 0,
+      "deltaPercentValue": 0,
       "warnings": "",
       "source": "latest run"
     },
@@ -153,6 +161,7 @@
       "cheaperSupplier": "Tie",
       "delta": "GBP 0.00",
       "deltaLowestUnitValue": 0,
+      "deltaPercentValue": 0,
       "warnings": "",
       "source": "latest run"
     },
@@ -175,6 +184,7 @@
       "cheaperSupplier": "Tie",
       "delta": "GBP 0.00",
       "deltaLowestUnitValue": 0,
+      "deltaPercentValue": 0,
       "warnings": "",
       "source": "latest run"
     },
@@ -197,6 +207,7 @@
       "cheaperSupplier": "Booking.com",
       "delta": "+GBP 3.56",
       "deltaLowestUnitValue": 356,
+      "deltaPercentValue": 4.623376623376623,
       "warnings": "",
       "source": "latest run"
     },
@@ -219,6 +230,7 @@
       "cheaperSupplier": "Tie",
       "delta": "GBP 0.00",
       "deltaLowestUnitValue": 0,
+      "deltaPercentValue": 0,
       "warnings": "",
       "source": "hotels.md"
     },
@@ -241,6 +253,7 @@
       "cheaperSupplier": "Tie",
       "delta": "GBP 0.00",
       "deltaLowestUnitValue": 0,
+      "deltaPercentValue": 0,
       "warnings": "",
       "source": "latest run"
     },
@@ -263,6 +276,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -15.85",
       "deltaLowestUnitValue": -1585,
+      "deltaPercentValue": -9.606060606060606,
       "warnings": "",
       "source": "latest run"
     },
@@ -285,6 +299,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -13.77",
       "deltaLowestUnitValue": -1377,
+      "deltaPercentValue": -10,
       "warnings": "",
       "source": "latest run"
     },
@@ -307,6 +322,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -3.24",
       "deltaLowestUnitValue": -324,
+      "deltaPercentValue": -2.2222222222222223,
       "warnings": "",
       "source": "latest run"
     },
@@ -329,6 +345,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -10.15",
       "deltaLowestUnitValue": -1015,
+      "deltaPercentValue": -6.343749999999999,
       "warnings": "",
       "source": "latest run"
     },
@@ -351,6 +368,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -17.66",
       "deltaLowestUnitValue": -1766,
+      "deltaPercentValue": -8.175925925925926,
       "warnings": "",
       "source": "latest run"
     },
@@ -373,6 +391,7 @@
       "cheaperSupplier": "Booking.com",
       "delta": "+GBP 0.41",
       "deltaLowestUnitValue": 41,
+      "deltaPercentValue": 0.3037037037037037,
       "warnings": "",
       "source": "latest run"
     },
@@ -395,6 +414,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -6.32",
       "deltaLowestUnitValue": -632,
+      "deltaPercentValue": -6.383838383838383,
       "warnings": "",
       "source": "latest run"
     },
@@ -417,6 +437,7 @@
       "cheaperSupplier": "Booking.com",
       "delta": "+GBP 1.22",
       "deltaLowestUnitValue": 122,
+      "deltaPercentValue": 0.8776978417266187,
       "warnings": "",
       "source": "latest run"
     },
@@ -439,6 +460,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -13.03",
       "deltaLowestUnitValue": -1303,
+      "deltaPercentValue": -9.796992481203008,
       "warnings": "",
       "source": "latest run"
     },
@@ -521,6 +543,7 @@
       "cheaperSupplier": "Booking.com",
       "delta": "+GBP 0.05",
       "deltaLowestUnitValue": 5,
+      "deltaPercentValue": 0.01256281407035176,
       "warnings": "",
       "source": "latest run"
     },
@@ -543,6 +566,7 @@
       "cheaperSupplier": "Booking.com",
       "delta": "+GBP 41.80",
       "deltaLowestUnitValue": 4180,
+      "deltaPercentValue": 15.714285714285714,
       "warnings": "",
       "source": "latest run"
     },
@@ -565,6 +589,7 @@
       "cheaperSupplier": "Booking.com",
       "delta": "+GBP 2.45",
       "deltaLowestUnitValue": 245,
+      "deltaPercentValue": 2.6630434782608696,
       "warnings": "",
       "source": "latest run"
     },
@@ -587,6 +612,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -3.24",
       "deltaLowestUnitValue": -324,
+      "deltaPercentValue": -4.32,
       "warnings": "",
       "source": "latest run"
     },
@@ -609,6 +635,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -6.14",
       "deltaLowestUnitValue": -614,
+      "deltaPercentValue": -5.159663865546219,
       "warnings": "",
       "source": "latest run"
     },
@@ -631,6 +658,7 @@
       "cheaperSupplier": "Tie",
       "delta": "GBP 0.00",
       "deltaLowestUnitValue": 0,
+      "deltaPercentValue": 0,
       "warnings": "",
       "source": "latest run"
     },
@@ -653,6 +681,7 @@
       "cheaperSupplier": "Tie",
       "delta": "GBP 0.00",
       "deltaLowestUnitValue": 0,
+      "deltaPercentValue": 0,
       "warnings": "",
       "source": "latest run"
     },
@@ -675,6 +704,7 @@
       "cheaperSupplier": "Booking.com",
       "delta": "+GBP 0.05",
       "deltaLowestUnitValue": 5,
+      "deltaPercentValue": 0.06756756756756757,
       "warnings": "",
       "source": "latest run"
     },
@@ -697,6 +727,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -7.22",
       "deltaLowestUnitValue": -722,
+      "deltaPercentValue": -4.8133333333333335,
       "warnings": "",
       "source": "latest run"
     },
@@ -719,6 +750,7 @@
       "cheaperSupplier": "Booking.com",
       "delta": "+GBP 4.47",
       "deltaLowestUnitValue": 447,
+      "deltaPercentValue": 3.5476190476190474,
       "warnings": "",
       "source": "latest run"
     },
@@ -741,6 +773,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -5.26",
       "deltaLowestUnitValue": -526,
+      "deltaPercentValue": -4.91588785046729,
       "warnings": "",
       "source": "latest run"
     },
@@ -763,6 +796,7 @@
       "cheaperSupplier": "Booking.com",
       "delta": "+GBP 0.01",
       "deltaLowestUnitValue": 1,
+      "deltaPercentValue": 0.008130081300813007,
       "warnings": "",
       "source": "latest run"
     },
@@ -785,6 +819,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -7.90",
       "deltaLowestUnitValue": -790,
+      "deltaPercentValue": -7.053571428571429,
       "warnings": "",
       "source": "latest run"
     },
@@ -807,6 +842,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -27.03",
       "deltaLowestUnitValue": -2703,
+      "deltaPercentValue": -15.624277456647398,
       "warnings": "",
       "source": "latest run"
     },
@@ -829,6 +865,7 @@
       "cheaperSupplier": "Tie",
       "delta": "GBP 0.00",
       "deltaLowestUnitValue": 0,
+      "deltaPercentValue": 0,
       "warnings": "",
       "source": "latest run"
     },
@@ -851,6 +888,7 @@
       "cheaperSupplier": "Booking.com",
       "delta": "+GBP 0.28",
       "deltaLowestUnitValue": 28,
+      "deltaPercentValue": 0.5185185185185185,
       "warnings": "",
       "source": "latest run"
     },
@@ -873,6 +911,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -15.54",
       "deltaLowestUnitValue": -1554,
+      "deltaPercentValue": -16.53191489361702,
       "warnings": "",
       "source": "latest run"
     },
@@ -895,6 +934,7 @@
       "cheaperSupplier": "Tie",
       "delta": "GBP 0.00",
       "deltaLowestUnitValue": 0,
+      "deltaPercentValue": 0,
       "warnings": "",
       "source": "latest run"
     },
@@ -917,6 +957,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -5.42",
       "deltaLowestUnitValue": -542,
+      "deltaPercentValue": -4.754385964912281,
       "warnings": "",
       "source": "latest run"
     },
@@ -939,6 +980,7 @@
       "cheaperSupplier": "Tie",
       "delta": "GBP 0.00",
       "deltaLowestUnitValue": 0,
+      "deltaPercentValue": 0,
       "warnings": "",
       "source": "latest run"
     },
@@ -961,6 +1003,7 @@
       "cheaperSupplier": "Booking.com",
       "delta": "+GBP 4.68",
       "deltaLowestUnitValue": 468,
+      "deltaPercentValue": 5.5058823529411764,
       "warnings": "",
       "source": "latest run"
     },
@@ -983,6 +1026,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -8.63",
       "deltaLowestUnitValue": -863,
+      "deltaPercentValue": -7.504347826086956,
       "warnings": "",
       "source": "latest run"
     },
@@ -1005,6 +1049,7 @@
       "cheaperSupplier": "Booking.com",
       "delta": "+GBP 18.25",
       "deltaLowestUnitValue": 1825,
+      "deltaPercentValue": 6.023102310231023,
       "warnings": "",
       "source": "latest run"
     },
@@ -1027,6 +1072,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -7.11",
       "deltaLowestUnitValue": -711,
+      "deltaPercentValue": -8.267441860465116,
       "warnings": "",
       "source": "latest run"
     },
@@ -1049,6 +1095,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -3.92",
       "deltaLowestUnitValue": -392,
+      "deltaPercentValue": -4.55813953488372,
       "warnings": "",
       "source": "latest run"
     },
@@ -1071,6 +1118,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -5.56",
       "deltaLowestUnitValue": -556,
+      "deltaPercentValue": -7.722222222222222,
       "warnings": "",
       "source": "latest run"
     },
@@ -1093,6 +1141,7 @@
       "cheaperSupplier": "Tie",
       "delta": "GBP 0.00",
       "deltaLowestUnitValue": 0,
+      "deltaPercentValue": 0,
       "warnings": "",
       "source": "latest run"
     },
@@ -1115,6 +1164,7 @@
       "cheaperSupplier": "Booking.com",
       "delta": "+GBP 4.79",
       "deltaLowestUnitValue": 479,
+      "deltaPercentValue": 6.063291139240507,
       "warnings": "",
       "source": "latest run"
     },
@@ -1137,6 +1187,7 @@
       "cheaperSupplier": "Omio/HBX",
       "delta": "GBP -14.30",
       "deltaLowestUnitValue": -1430,
+      "deltaPercentValue": -11.916666666666668,
       "warnings": "",
       "source": "latest run"
     },
@@ -1159,9 +1210,10 @@
       "cheaperSupplier": "Booking.com",
       "delta": "+GBP 7.98",
       "deltaLowestUnitValue": 798,
+      "deltaPercentValue": 6.045454545454546,
       "warnings": "",
       "source": "latest run"
     }
   ],
-  "publishedAtIso": "2026-05-11T09:05:21.753Z"
+  "publishedAtIso": "2026-05-12T15:40:58.065Z"
 }
