@@ -209,20 +209,27 @@ const buildRows = (hotels, latestResult, currency) => {
 
   return hotels.map(hotel => {
     const result = getResultRow(resultsByNumber, hotel);
-    const bookingLowestUnitValue =
-      result.bookingLowestUnitValue ?? hotel.bookingLowestUnitValue;
-    const omioLowestUnitValue = result.omioLowestUnitValue ?? hotel.omioLowestUnitValue;
+    const hasLatestResult = Boolean(result.rowNumber);
+    const bookingLowestUnitValue = hasLatestResult
+      ? result.bookingLowestUnitValue
+      : result.bookingLowestUnitValue ?? hotel.bookingLowestUnitValue;
+    const omioLowestUnitValue = hasLatestResult
+      ? result.omioLowestUnitValue
+      : result.omioLowestUnitValue ?? hotel.omioLowestUnitValue;
     const deltaLowestUnitValue =
       Number.isFinite(bookingLowestUnitValue) && Number.isFinite(omioLowestUnitValue)
         ? omioLowestUnitValue - bookingLowestUnitValue
-        : result.deltaLowestUnitValue ?? hotel.deltaLowestUnitValue;
+        : hasLatestResult
+          ? result.deltaLowestUnitValue
+          : result.deltaLowestUnitValue ?? hotel.deltaLowestUnitValue;
     const deltaPercentValue = getDeltaPercentValue(
       deltaLowestUnitValue,
       bookingLowestUnitValue,
     );
     const warnings = normalizeText(result.warnings);
-    const hasFallbackOmio = !result.omioPrice && hotel.omioPrice;
-    const hasFallbackBooking = !result.bookingPrice && hotel.bookingPrice;
+    const hasFallbackOmio = !hasLatestResult && !result.omioPrice && hotel.omioPrice;
+    const hasFallbackBooking =
+      !hasLatestResult && !result.bookingPrice && hotel.bookingPrice;
 
     return {
       rowNumber: hotel.rowNumber,
@@ -233,12 +240,16 @@ const buildRows = (hotels, latestResult, currency) => {
       longitude: hotel.longitude,
       bookingUrl: result.bookingUrl || hotel.bookingUrl,
       bookingPrice:
-        result.bookingPrice || hotel.bookingPrice || formatMoney(bookingLowestUnitValue, currency),
+        result.bookingPrice ||
+        (!hasLatestResult ? hotel.bookingPrice : "") ||
+        formatMoney(bookingLowestUnitValue, currency),
       bookingLowestUnitValue,
       bookingRoomName: result.bookingRoomName || "",
       omioUrl: result.omioUrl || "",
       omioPrice:
-        result.omioPrice || hotel.omioPrice || formatMoney(omioLowestUnitValue, currency),
+        result.omioPrice ||
+        (!hasLatestResult ? hotel.omioPrice : "") ||
+        formatMoney(omioLowestUnitValue, currency),
       omioLowestUnitValue,
       omioAccommodationName: result.omioAccommodationName || "",
       omioRoomName: result.omioRoomName || "",
@@ -249,7 +260,7 @@ const buildRows = (hotels, latestResult, currency) => {
       ),
       delta: Number.isFinite(deltaLowestUnitValue)
         ? formatMoney(deltaLowestUnitValue, currency, true)
-        : result.delta || hotel.delta || "",
+        : result.delta || (!hasLatestResult ? hotel.delta : "") || "",
       deltaLowestUnitValue,
       deltaPercentValue,
       warnings:
@@ -259,7 +270,7 @@ const buildRows = (hotels, latestResult, currency) => {
       source:
         hasFallbackOmio || hasFallbackBooking
           ? "hotels.md"
-          : result.rowNumber
+          : hasLatestResult
             ? "latest run"
             : "hotels.md",
     };
