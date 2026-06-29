@@ -17,6 +17,8 @@ const ADULTS = CONFIG.adults;
 const CHILDREN = CONFIG.children;
 const ROOMS = CONFIG.rooms;
 const PAGE_SIZE = "1000";
+const ACCOMMODATIONS_BASE_URL =
+  "https://www.omio.com/accommodations-service";
 const OUTPUT_DIR = path.resolve(
   REPO_ROOT,
   "runs",
@@ -507,190 +509,341 @@ const scrapeBookingPrice = async (context, hotel) => {
   }
 };
 
-const accommodationUrlFor = hotel => {
-  const url = new URL(
-    "https://www.omio.com/accommodations-service/accommodations/search/stream",
-  );
-  url.searchParams.set("adults", ADULTS);
-  url.searchParams.set("checkIn", CHECK_IN_API);
-  url.searchParams.set("checkOut", CHECK_OUT_API);
-  url.searchParams.set("children", CHILDREN);
-  url.searchParams.set("currency", CURRENCY);
-  url.searchParams.set("latitude", String(hotel.latitude));
+const omioHeaders = {
+  Accept: "application/json, text/plain, */*",
+  "Accept-Language": "en-GB,en;q=0.9",
+  "Cache-Control": "no-cache",
+  "Content-Type": "application/json",
+  "User-Agent":
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+};
+
+const geoUrlFor = hotel => {
+  const url = new URL(`${ACCOMMODATIONS_BASE_URL}/accommodations/geo`);
+  url.searchParams.set("lat", String(hotel.latitude));
+  url.searchParams.set("lng", String(hotel.longitude));
+  url.searchParams.set("radius", "20");
+  url.searchParams.set("radiusUnit", "km");
+  url.searchParams.set("limit", PAGE_SIZE);
+  url.searchParams.set("sort", "distance");
+  url.searchParams.set("hasImages", "true");
   url.searchParams.set("locale", "en");
-  url.searchParams.set("longitude", String(hotel.longitude));
-  url.searchParams.set("page", "1");
-  url.searchParams.set("pageSize", PAGE_SIZE);
-  url.searchParams.set("rooms", ROOMS);
-  url.searchParams.set("userCountryCode", USER_COUNTRY_CODE);
 
   return url.toString();
 };
 
-const parseAccommodationStream = streamText => {
-  const accommodations = [];
-  let dataLines = [];
+const availabilityUrl = `${ACCOMMODATIONS_BASE_URL}/accommodations/availability`;
 
-  const flush = () => {
-    if (dataLines.length === 0) return;
+const buildOccupancies = () => {
+  const requestedAdults = Number.parseInt(ADULTS, 10) || 1;
+  const requestedChildren = Number.parseInt(CHILDREN, 10) || 0;
+  const requestedRooms = Number.parseInt(ROOMS, 10) || 1;
+  const roomCount = Math.max(1, Math.min(requestedRooms, requestedAdults || 1));
+  const adultsPerRoom = Math.floor(requestedAdults / roomCount);
+  const extraAdults = requestedAdults % roomCount;
+  const childrenPerRoom = Math.floor(requestedChildren / roomCount);
+  const extraChildren = requestedChildren % roomCount;
 
-    const data = dataLines.join("\n");
-    dataLines = [];
-
-    try {
-      const parsed = JSON.parse(data);
-      if (Array.isArray(parsed.accommodations)) {
-        accommodations.push(...parsed.accommodations);
-      }
-    } catch {
-      // Ignore non-accommodation status events.
-    }
-  };
-
-  for (const line of streamText.split(/\r?\n/)) {
-    if (line.startsWith("data:")) {
-      dataLines.push(line.slice("data:".length).trimStart());
-    } else if (line.trim() === "") {
-      flush();
-    }
-  }
-  flush();
-
-  return accommodations;
+  return Array.from({ length: roomCount }, (_, index) => ({
+    adults: adultsPerRoom + (index < extraAdults ? 1 : 0),
+    childrenAges: Array.from(
+      {
+        length: childrenPerRoom + (index < extraChildren ? 1 : 0),
+      },
+      () => 0,
+    ),
+  }));
 };
 
-const providerIdFromRateKey = rateKey => {
-  const value = (rateKey || "").split("|")[4]?.trim();
-  return /^\d+$/.test(value || "") ? value : undefined;
-};
+const AVAILABILITY_OCCUPANCIES = buildOccupancies();
 
-const providerIdForAccommodation = accommodation => {
-  if (accommodation.providerHotelIdentifier) {
-    return String(accommodation.providerHotelIdentifier);
+const hotelNameTokens = value =>
+  normalizeText(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .split(" ")
+    .map(token => token.trim())
+    .filter(Boolean)
+    .filter(token => !["a", "an", "by", "hotel", "the"].includes(token));
+
+const canonicalHotelName = value =>
+  [...new Set(hotelNameTokens(value))].sort().join(" ");
+
+const hotelNameSimilarity = (leftName, rightName) => {
+  const leftTokens = hotelNameTokens(leftName);
+  const rightTokens = hotelNameTokens(rightName);
+
+  if (leftTokens.length === 0 || rightTokens.length === 0) {
+    return 0;
   }
 
-  for (const room of accommodation.rooms || []) {
-    for (const offer of room.offers || []) {
-      const providerId = providerIdFromRateKey(offer.rateKey);
-      if (providerId) return providerId;
-    }
-  }
+  const rightTokenSet = new Set(rightTokens);
+  const overlap = leftTokens.filter(token => rightTokenSet.has(token)).length;
 
-  return undefined;
+  return overlap / Math.max(leftTokens.length, rightTokens.length);
 };
 
-const findExactAccommodation = (accommodations, hotel) => {
-  const expectedProviderId = String(hotel.providerHotelIdentifier || "").trim();
+const findAccommodationByName = (accommodations, hotel) => {
+  const expectedName = normalizeText(hotel.hotel).toLowerCase();
+  const exactMatch = accommodations.find(
+    accommodation => normalizeText(accommodation.name).toLowerCase() === expectedName,
+  );
 
-  if (expectedProviderId) {
-    const providerMatch = accommodations.find(
-      accommodation => providerIdForAccommodation(accommodation) === expectedProviderId,
+  if (exactMatch) return exactMatch;
+
+  const expectedCanonicalName = canonicalHotelName(hotel.hotel);
+  const canonicalMatch = accommodations.find(
+    accommodation => canonicalHotelName(accommodation.name) === expectedCanonicalName,
+  );
+
+  if (canonicalMatch) return canonicalMatch;
+
+  const rankedCandidates = accommodations
+    .map(accommodation => ({
+      accommodation,
+      similarity: hotelNameSimilarity(hotel.hotel, accommodation.name),
+    }))
+    .filter(candidate => candidate.similarity >= 0.8)
+    .sort((left, right) => right.similarity - left.similarity);
+
+  if (
+    rankedCandidates[0] &&
+    (!rankedCandidates[1] ||
+      rankedCandidates[0].similarity > rankedCandidates[1].similarity)
+  ) {
+    return rankedCandidates[0].accommodation;
+  }
+
+  return null;
+};
+
+const findGeoHotel = (geoHotels, hotel) => {
+  const expectedHotelId = String(hotel.providerHotelIdentifier || "").trim();
+
+  if (expectedHotelId) {
+    const idMatch = geoHotels.find(
+      geoHotel => String(geoHotel.hotelId || "").trim() === expectedHotelId,
     );
 
-    if (providerMatch) return providerMatch;
+    if (idMatch) return idMatch;
   }
 
-  const expectedName = normalizeText(hotel.hotel).toLowerCase();
-  return (
-    accommodations.find(
-      accommodation => normalizeText(accommodation.name).toLowerCase() === expectedName,
-    ) || null
-  );
+  return findAccommodationByName(geoHotels, hotel);
 };
 
-const cheapestOfferFor = accommodation => {
-  let cheapest = null;
-
-  for (const room of accommodation.rooms || []) {
-    for (const offer of room.offers || []) {
-      const price =
-        offer.totalPriceBundle?.displayPrice ||
-        offer.totalNetPrice?.displayPrice ||
-        offer.totalPriceBundle?.providerPrice ||
-        offer.totalPriceBundle?.paymentPrice;
-
-      if (
-        !price ||
-        price.currency !== CURRENCY ||
-        !Number.isFinite(price.lowestUnitValue) ||
-        price.lowestUnitValue <= 0
-      ) {
-        continue;
-      }
-
-      if (!cheapest || price.lowestUnitValue < cheapest.value) {
-        cheapest = {
-          value: price.lowestUnitValue,
-          display: formatMoney(price.lowestUnitValue),
-          roomName: room.name,
-          rateKey: offer.rateKey,
-          boardCode: offer.boardCode,
-          boardName: offer.boardName,
-        };
-      }
-    }
-  }
-
-  return cheapest;
-};
-
-const fetchAccommodationPrice = async hotel => {
-  const url = accommodationUrlFor(hotel);
-
+const fetchGeoHotels = async hotel => {
+  const url = geoUrlFor(hotel);
   const response = await fetch(url, {
-    headers: {
-      Accept: "text/event-stream",
-      "Accept-Language": "en-GB,en;q=0.9",
-      "Cache-Control": "no-cache",
-      "User-Agent":
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-    },
+    headers: omioHeaders,
   });
 
   if (!response.ok) {
     return {
+      hotels: [],
+      url,
+      warning: `omio_geo_http_${response.status}`,
+    };
+  }
+
+  const hotels = await response.json();
+
+  return {
+    hotels: Array.isArray(hotels) ? hotels : [],
+    url,
+  };
+};
+
+const fetchAvailability = async hotelId => {
+  const response = await fetch(availabilityUrl, {
+    method: "POST",
+    headers: omioHeaders,
+    body: JSON.stringify({
+      hotelIds: [hotelId],
+      checkIn: CHECK_IN_API,
+      checkOut: CHECK_OUT_API,
+      occupancies: AVAILABILITY_OCCUPANCIES,
+      currency: CURRENCY,
+      locale: "en",
+      userCountryCode: USER_COUNTRY_CODE,
+    }),
+  });
+
+  if (!response.ok) {
+    return {
+      warning: `omio_http_${response.status}`,
+      entries: [],
+    };
+  }
+
+  const entries = await response.json();
+  return {
+    entries: Array.isArray(entries) ? entries : [],
+  };
+};
+
+const parseAvailabilityEntry = (entry, fallbackHotel) => {
+  const price =
+    entry.minRatePrice?.displayPrice ||
+    entry.minRatePrice?.providerPrice ||
+    entry.minRatePrice?.paymentPrice;
+
+  if (!entry.available) {
+    return {
       value: undefined,
       display: undefined,
-      warning: `omio_http_${response.status}`,
+      warning: "omio_price_unavailable",
+      accommodationId: entry.accommodationId,
+      accommodationName: fallbackHotel?.name || "",
+      providerHotelIdentifier: String(entry.hotelId || ""),
+    };
+  }
+
+  if (
+    !price ||
+    price.currency !== CURRENCY ||
+    !Number.isFinite(price.lowestUnitValue) ||
+    price.lowestUnitValue <= 0
+  ) {
+    return {
+      value: undefined,
+      display: undefined,
+      warning: "omio_price_unavailable",
+      accommodationId: entry.accommodationId,
+      accommodationName: fallbackHotel?.name || "",
+      providerHotelIdentifier: String(entry.hotelId || ""),
+    };
+  }
+
+  return {
+    value: price.lowestUnitValue,
+    display: formatMoney(price.lowestUnitValue),
+    roomName: entry.cheapestOffer?.roomName || "",
+    rateKey: entry.cheapestOffer?.rateKey || "",
+    boardCode: entry.cheapestOffer?.boardCode || "",
+    boardName: entry.cheapestOffer?.boardName || "",
+    accommodationId: entry.accommodationId || "",
+    accommodationName: fallbackHotel?.name || "",
+    providerHotelIdentifier: String(entry.hotelId || ""),
+  };
+};
+
+const fetchAccommodationPrice = async hotel => {
+  const configuredHotelId = Number.parseInt(
+    String(hotel.providerHotelIdentifier || "").trim(),
+    10,
+  );
+  const candidateHotelIds = [];
+  if (Number.isFinite(configuredHotelId)) {
+    candidateHotelIds.push(configuredHotelId);
+  }
+  let geoHotel = null;
+  let geoUrl = "";
+  let mustResolveViaGeo = candidateHotelIds.length === 0;
+
+  if (mustResolveViaGeo) {
+    const geoResult = await fetchGeoHotels(hotel);
+    geoUrl = geoResult.url;
+
+    if (geoResult.warning) {
+      return {
+        value: undefined,
+        display: undefined,
+        warning: geoResult.warning,
+        url: geoUrl,
+      };
+    }
+
+    geoHotel = findGeoHotel(geoResult.hotels, hotel);
+
+    if (!geoHotel) {
+      return {
+        value: undefined,
+        display: undefined,
+        warning: "omio_exact_hotel_not_found",
+        url: geoUrl,
+        resultCount: geoResult.hotels.length,
+      };
+    }
+
+    candidateHotelIds.push(geoHotel.hotelId);
+  } else {
+    geoHotel = { hotelId: configuredHotelId, name: hotel.hotel };
+  }
+
+  let availabilityResult = await fetchAvailability(candidateHotelIds[0]);
+  let selectedHotelId = candidateHotelIds[0];
+
+  if (
+    !availabilityResult.warning &&
+    !availabilityResult.entries.some(
+      item => Number(item.hotelId) === Number(selectedHotelId),
+    )
+  ) {
+    mustResolveViaGeo = true;
+  }
+
+  if (mustResolveViaGeo && !geoUrl) {
+    const geoResult = await fetchGeoHotels(hotel);
+    geoUrl = geoResult.url;
+
+    if (geoResult.warning) {
+      return {
+        value: undefined,
+        display: undefined,
+        warning: geoResult.warning,
+        url: geoUrl,
+      };
+    }
+
+    geoHotel = findGeoHotel(geoResult.hotels, hotel);
+
+    if (!geoHotel) {
+      return {
+        value: undefined,
+        display: undefined,
+        warning: "omio_exact_hotel_not_found",
+        url: geoUrl,
+        resultCount: geoResult.hotels.length,
+      };
+    }
+
+    selectedHotelId = geoHotel.hotelId;
+    if (selectedHotelId !== candidateHotelIds[0]) {
+      availabilityResult = await fetchAvailability(selectedHotelId);
+    }
+  }
+
+  const url =
+    `${availabilityUrl}?hotelId=${selectedHotelId}` +
+    (geoUrl ? `&source=geo` : "");
+
+  if (availabilityResult.warning) {
+    return {
+      value: undefined,
+      display: undefined,
+      warning: availabilityResult.warning,
       url,
     };
   }
 
-  const accommodations = parseAccommodationStream(await response.text());
-  const accommodation = findExactAccommodation(accommodations, hotel);
+  const entry = availabilityResult.entries.find(
+    item => Number(item.hotelId) === Number(selectedHotelId),
+  );
 
-  if (!accommodation) {
+  if (!entry) {
     return {
       value: undefined,
       display: undefined,
       warning: "omio_exact_hotel_not_found",
       url,
-      resultCount: accommodations.length,
-    };
-  }
-
-  const offer = cheapestOfferFor(accommodation);
-
-  if (!offer) {
-    return {
-      value: undefined,
-      display: undefined,
-      warning: "omio_price_unavailable",
-      url,
-      resultCount: accommodations.length,
-      accommodationId: accommodation.id,
-      accommodationName: accommodation.name,
-      providerHotelIdentifier: providerIdForAccommodation(accommodation),
+      resultCount: availabilityResult.entries.length,
     };
   }
 
   return {
-    ...offer,
+    ...parseAvailabilityEntry(entry, geoHotel),
     url,
-    resultCount: accommodations.length,
-    accommodationId: accommodation.id,
-    accommodationName: accommodation.name,
-    providerHotelIdentifier: providerIdForAccommodation(accommodation),
+    resultCount: availabilityResult.entries.length,
   };
 };
 
