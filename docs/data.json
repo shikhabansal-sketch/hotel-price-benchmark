@@ -1,13 +1,13 @@
 {
-  "generatedAtIso": "2026-06-29T14:17:29.443Z",
+  "generatedAtIso": "2026-07-06T08:24:08.074Z",
   "config": {
     "label": "1 adult, 1 room, 1 night, 7 days in advance, GBP, GB",
     "currency": "GBP"
   },
-  "hotelsUpdatedAtIso": "2026-06-29T12:24:55.728Z",
+  "hotelsUpdatedAtIso": "2026-07-06T08:22:17.101Z",
   "latestRun": {
     "directory": "booking-omio-2026-07-06-2026-07-07",
-    "updatedAtIso": "2026-06-29T14:17:06.907Z",
+    "updatedAtIso": "2026-07-06T08:22:17.121Z",
     "checkInIso": "2026-07-06",
     "checkOutIso": "2026-07-07"
   },
@@ -1208,5 +1208,5 @@
       "source": "latest run"
     }
   ],
-  "publishedAtIso": "2026-06-29T14:17:29.444Z"
+  "publishedAtIso": "2026-07-06T08:24:08.074Z"
 }
